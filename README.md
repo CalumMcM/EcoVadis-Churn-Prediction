@@ -1,6 +1,6 @@
 # EcoVadis-Churn-Prediction
  
-## Notable insights:
+## Data Analysis:
 The following information was found from data analysis that was applied to the 'Assignment (churn prediction).xlsx' file
 
  ### Preliminary analysis:
@@ -32,7 +32,12 @@ The following information was found from data analysis that was applied to the '
 
     * There are no duplicated results in the customer feedback. 
 
-Data Analysis:
+### Noteable Insights:
+
+* The number of users in the database that have exited are 2,037 meaning that only 20.4% of all entries are for exited users, leaving us with a class imbalance. 
+
+* From the group box plot it is clear that the most inlfluential factors to whether a user leaves the system or not is their age and their balance. Older users are more likely to leave
+while those with a lower balance are more likely to stay. 
 
 * The average customer has been with the company for 5 years and holds a 
     balance of around 76,000 euros with a credit score of 650. The majority of 
@@ -92,3 +97,71 @@ Data Analysis:
 
             customer_stayed = cust_data[(cust_data['Balance (EUR)'] == 0) & (cust_data['Exited']==0)]
             customer_exited = cust_data[(cust_data['Balance (EUR)'] == 0) & (cust_data['Exited']==1)]
+
+
+## Model Training and Evaluation
+
+Two models were trained on the data, a RandomForestClassifier and an XGBoost classifier. Before training took place however, some final adjustments to the dataset were made. 
+
+### Pre-training:
+
+Before data was passed to the model to train, the following fields were removed: 'RowNumber', 'CustomerId', 'Surname', 'CustomerFeedback'. These fields were removed as they held either personal information such as 'Surname' or they were fields that would not help predictions.
+
+As well as removing these fields certain fields had label encoding applied to them. This was done to convert them from being of the String data type to an integer data type which the model will be able to better use as part of integer encoding. 
+
+The training data was split into the ratio of 70% train and 30% test. 
+
+### Evaluation
+
+Confusion matrices were produced for the results in order to visualise displacement of predictions, while classification reports were also generated in order to understand the precision, recall and f1-score of the model. The following are the results:
+
+Random Forest: 
+
+              precision    recall  f1-score   support
+
+           0       0.87      0.96      0.92      2379
+           1       0.77      0.47      0.58       621
+
+    accuracy                           0.86      3000
+    macro avg      0.82      0.72      0.75      3000
+    weighted avg   0.85      0.86      0.85      3000
+
+XGBoost:
+
+              precision    recall  f1-score   support
+
+           0       0.89      0.95      0.92      2379
+           1       0.74      0.53      0.61       621
+
+    accuracy                           0.86      3000
+    macro avg      0.81      0.74      0.77      3000
+    weighted avg   0.85      0.86      0.85      3000
+
+#### SMOTE
+
+As the input possesed a class imbalance SMOTE was applied in order to even out the number of classes present in training data. This meant that where before the class distribution was: {0 : 5584, 1 : 1416} it was now: {0 : 5584, 1 : 5584}. SMOTE was only applied to the training sets and had the following impact on the test set results: 
+
+Random Forest with SMOTE:
+
+              precision    recall  f1-score   support
+
+           0       0.90      0.87      0.88      2379
+           1       0.55      0.61      0.58       621
+
+    accuracy                           0.81      3000
+    macro avg      0.72      0.74      0.73      3000
+    weighted avg   0.82      0.81      0.82      3000
+
+XGBoost with SMOTE:
+
+              precision    recall  f1-score   support
+
+           0       0.90      0.87      0.88      2379
+           1       0.56      0.63      0.59       621
+
+    accuracy                           0.82      3000
+    macro avg      0.73      0.75      0.74      3000
+    weighted avg   0.83      0.82      0.82      3000
+
+
+It is evident that the addition of SMOTE has not increased the results signicantly and in fact has reduced performance of the model on nearly all metrics. This could be arrising from the fact that SMOTE is creating noise as part of its process in bulking the number of instances present in the smaller dataset. This noise could be leading to a decision boundary which is further from the real world equivalent and as a result the model struggles when only presented with real data. 
