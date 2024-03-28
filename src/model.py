@@ -1,22 +1,38 @@
-from sklearn.model_selection import train_test_split
-from data_analysis import DataLoader
-from sklearn.ensemble import RandomForestClassifier
-import xgboost as xgb
-from sklearn.metrics import accuracy_score, confusion_matrix, \
-    classification_report
-from imblearn.over_sampling import SMOTE
-
-import numpy as np
-import seaborn as sns 
+"""
+This module contains the MachineLearningModel class that allows a user to make
+predictions with a desired classification model and evaluate the results. 
+"""
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import xgboost as xgb
+from imblearn.over_sampling import SMOTE
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 class MachineLearningModel():
     """
-    TODO: Write summary
+    This class allows a user to train either a Random Forest Classifier or
+    a XGBoost classifier with a given set of training and test data. The user
+    can then evaluate this model by creating a confusion matrix and
+    classification report against the predictions made by the model. 
+
+    Attributes:
+        * self.x_train: (pd.DataFrame) 
+        * self.x_test: (pd.DataFrame)  
+        * self.y_train: (pd.DataFrame)  
+        * self.y_test: (pd.DataFrame)  
+        * self.model_type: (string) 
+        * model_type: (string) 
+        * self.model: (RandomForestClassifier or xgb.XGBRegressor)
+
+    Methods:
+        * fit_and_predict
+        * evaluate
     """
 
-    def __init__(self, x_train, x_test, 
+    def __init__(self, x_train, x_test,
                  y_train, y_test, model_type) -> None:
         """
         Init function for the class
@@ -48,7 +64,7 @@ class MachineLearningModel():
             self.model = xgb.XGBRegressor(objective="binary:logistic")
         else:
             self.model = None
-            print ("No model chosen! The selected model \
+            print("No model chosen! The selected model \
                     must be either RF or XGB.")
 
     def fit_and_predict(self):
@@ -71,22 +87,25 @@ class MachineLearningModel():
 
         return y_pred
 
-    def conf_matrix(self, y_preds):
+    def evaluate(self, y_preds, y_test):
         """
         Plots of a confusion matrix with a given 
-        set of predictions. 
+        set of predictions and outputs the 
+        classifcation report to the terminal.
 
         Inputs:
             * y_preds: (array(int)) Predictions
                 by the model of whether or not
                 a user has stayed (0) or exited (1)
+            * y_test: (array(int)) Ground truth
+                labels for each of the predictions
         """
         matrix = confusion_matrix(self.y_test, y_preds)
         matrix = matrix.astype('float') / matrix.sum(axis=1)[:, np.newaxis]
 
         # Build the plot
-        plt.figure(figsize=(16,7))
-        sns.heatmap(matrix, annot=True, annot_kws={'size':10},
+        plt.figure(figsize=(16, 7))
+        sns.heatmap(matrix, annot=True, annot_kws={'size': 10},
                     cmap=plt.cm.Greens, linewidths=0.2)
 
         # Add labels to the plot
@@ -100,47 +119,5 @@ class MachineLearningModel():
         plt.savefig(f'./Figures/conf_matrix_SENTIMENT_{self.model_type}')
         plt.show()
 
-def main():
-
-    # Load and clean the data
-    dataloader = DataLoader("customer_data.xlsx")
-    customer_data = dataloader.load_and_clean()
-
-    # Encode string type columns that can be easily done so
-    cols_to_encode = ['Country', 'Gender']
-    encoded_data = dataloader.apply_label_encoding(customer_data, cols_to_encode)
-
-    sentiment_data = dataloader.apply_sentiment_analysis(encoded_data, ['CustomerFeedback'])
-
-    # Remove columns that cannot be easily converted
-    # to a type the model can extract
-    # meaningful information from
-    drop_cols = ['RowNumber', 'CustomerId', 'Surname']
-    reduced_data = sentiment_data.drop(columns=drop_cols)
-    
-    # Seperated labels from input data
-    x = reduced_data.drop(columns=['Exited'])
-    y = reduced_data['Exited']
-    
-    # Create train test splits
-    x_train, x_test, y_train, y_test =  \
-                train_test_split(x, y, test_size=0.3, random_state=42)
-    
-    # Apply SMOTE 
-    # oversample = SMOTE(k_neighbors=5)
-    # x_smote, y_smote = oversample.fit_resample(x_train, y_train)
-    # x_train, y_train = x_smote, y_smote
-    # print (y_train.value_counts())
-
-    machine_learning_model = MachineLearningModel(x_train, x_test, y_train,
-                                                  y_test, "XGB")
-
-    y_preds = machine_learning_model.fit_and_predict()
-
-    machine_learning_model.conf_matrix(y_preds)
-
-    print(classification_report(y_test, y_preds))
-
-if __name__ == "__main__":
-
-    main()
+        # Output the classification report
+        print(classification_report(y_test, y_preds))

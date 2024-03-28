@@ -1,158 +1,41 @@
+"""
+This module contains the DataAnalysis class which allows a user to create a
+variety of plots based on inputted data. 
+"""
 import math
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import seaborn as sns 
-import matplotlib.pyplot as plt
-from sklearn import preprocessing
+import seaborn as sns
 
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-import nltk
-import ssl
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
-nltk.download('vader_lexicon')
-
-class DataLoader():
-    """
-    TODO: Class description, variables, methods
-    TODO: Move class to own folder
-    """
-    
-    def __init__(self, dataset_dir) -> None:
-        self.dataset_dir = dataset_dir    
-    
-    def load_and_clean(self) -> pd.DataFrame:
-        """
-        Loads an excel spreadsheet from the global excel 
-        directory
-
-        Returns:
-            * clean_dataframe: (pd.DataFrame) Pandas 
-                dataframe of the given excel spreadsheet
-                 that has had all NaN values errors replaced
-        """
-
-        excel_dataframe = pd.read_excel(self.dataset_dir)
-
-        # Replaces all NaN values in an array with empty
-        # strings. This is okay for this use case where the
-        # only NaN values are in columns of type string.
-        # However a more robust solution would check the
-        # column type first the replace accordingly.
-        clean_dataframe = excel_dataframe.fillna("")
-
-        return clean_dataframe
-    
-    def apply_label_encoding(self, df, cols_to_apply) -> pd.DataFrame:
-        """
-        Takes a dataframe and a list of column headers 
-        that should be encoding from their string values,
-        and converts them to integers, e.g., 
-        ["France", "Germany"] becomes [1,  2]
-        
-        Inputs:
-            * df: (pd.DataFrame) The dataframe containing the
-                data
-            * cols_to_apply: (array(string)) The columns we 
-                with to apply label encoding to
-
-        Returns:
-            * df: (pd.DataFrame) The original dataframe but
-                the columns contained in the cols_to_apply
-                input have been converted from strings to
-                integer encodings
-        """
-        encoder = preprocessing.LabelEncoder()
-
-        # Create a dataframe that just contains the columns of interest
-        cols_of_interest = df[cols_to_apply]
-
-        # Apply label encoding 
-        cols_of_interest = cols_of_interest.apply(encoder.fit_transform)
-
-        # Merge the updated columns of interest back to
-        # the original dataset
-        df[cols_to_apply] = cols_of_interest
-
-        return df
-
-    def apply_sentiment_analysis(self, df, col_name):
-        """
-        Applies sentiment analysis to the given column
-        
-        Inputs:
-            * df: (pd.DataFrame) The dataframe containing the
-                data
-            * col_name: (string) Column which sentiment
-                analysis will be applied to. 
-        
-        Returns:
-            * df: (pd.DataFrame) The same dataframe that was
-                passed into the model but the col_name column
-                has had sentiment analyses applied
-        """
-        # Create vader sentiment analyser
-        analyzer = SentimentIntensityAnalyzer()
-
-        # Extract column to apply sentiment analyses to
-        col_to_apply = df[col_name].to_numpy()
-
-        sentiments = np.zeros(len(col_to_apply))
-
-        # Appply sentiment analyses to each entry in the columns
-        for idx, text in enumerate(col_to_apply):
-            # Get the compound score and sort the combined
-            # probability into one of three columns:
-            # > 0.05 = Review is positive
-            # 0.05 < && < 0.05 = Review is neutral
-            # < 0.05 = Review is negative
-
-            compound_score = analyzer.polarity_scores(text[0])["compound"]
-
-            if compound_score > 0.05:
-                sentiments[idx] = 1
-            elif compound_score < -0.05:
-                sentiments[idx] = -1
-            else:
-                sentiments[idx] = 0
-
-        # Change to format of Pandas DataFrame
-        sentiments = np.transpose([sentiments])
-
-        df[col_name] = sentiments
-        
-        return df
-    
 
 class DataAnalysis():
     """
-    TODO: Class description, variables, methods
-    """
+    This class allows a user to create graphical evaluations of input data. 
 
-    def __init__(self) -> None:
-        """
-        Init function for this class
-        """
+    Methods:
+        * compare_mean_against_existed
+        * compare_ratio_of_exited
+        * group_box_plot
+    """
 
     def compare_mean_against_existed(self, cust_data, col):
         """
-        Takes a column name in the database and takes the mean
-        of the value for both those that exited and those that
-        remained. 
+        Takes a column name in the database and takes the mean of the value for
+        both those that exited and those that remained. This allows for
+        individual comparison of those that left and stayed for indivdual
+        categories.
 
-        TODO: Check column is float/int/double (not String)
-        Inputs:     
+        TODO: Check column is float/int/double (not String) Inputs:     
             * cust_data: (pd.DataFrame) Dataframe that will be 
                 analysed 
             * col: (string) Column that will be analysed
 
         Returns:
-            * TODO:
+            * all_mean: (float) The mean value for everyone that stayed and left
+            * stayed_mean: (float) The mean value for those that stayed
+            * left_mean: (flaot) The mean value for those that exited
         """
 
         # Get the data for both those who left and those
@@ -160,66 +43,66 @@ class DataAnalysis():
         customer_stayed = cust_data.loc[cust_data['Exited'] == 0]
         customer_exited = cust_data.loc[cust_data['Exited'] == 1]
 
+        # Calculate the means for each of the three output categories
         all_mean = cust_data[col].mean()
         stayed_mean = customer_stayed[col].mean()
         left_mean = customer_exited[col].mean()
 
         # Output the results:
-        print(f"Column: {col}\nAll: {all_mean}\n" \
+        print(f"\nColumn: {col}\nAll: {all_mean}\n"
               f"Stayed: {stayed_mean}\nLeft: {left_mean}\n")
 
         return all_mean, stayed_mean, left_mean
-    
-    def compare_mode_against_existed(self, cust_data, col, title, save_name):
+
+    def compare_ratio_of_exited(self, cust_data, col, title, save_name):
         """
-        Takes a column name in the database and counts the 
-        number of occurances for each value. 
+        Takes a column name in the database and counts the number of occurances
+        and ratios for the three categories of: 'All', 'Stayed', and 'Exited'. 
 
         Inputs:     
-            * cust_data: (pd.DataFrame) Dataframe that will be 
-                analysed 
+            * cust_data: (pd.DataFrame) Dataframe that will be analysed
             * col: (string) Column that will be analysed
             * title: (string) Title of the figure
             * save_name: (string) Name of figure to save
 
         Returns:
-            * TODO
+            * df_combined: (pd.DataFrame) The number of occurances for each of
+              the three categories of interest. 
         """
         # Get the data for both those who left and those
         # who stayed
         customer_stayed = cust_data.loc[cust_data['Exited'] == 0]
         customer_exited = cust_data.loc[cust_data['Exited'] == 1]
 
-        # Calculate the mode
-        all_counts = cust_data[col].value_counts()
-        stayed_counts = customer_stayed[col].value_counts()
-        left_counts = customer_exited[col].value_counts()
-
+        # Calculate the number of occurances for three categories
         df_combined = pd.DataFrame()
 
-        df_combined['All'] = all_counts
-        df_combined['Stayed'] = stayed_counts
-        df_combined['Left'] = left_counts
+        df_combined['All'] = cust_data[col].value_counts()
+        df_combined['Stayed'] =  customer_stayed[col].value_counts()
+        df_combined['Left'] = customer_exited[col].value_counts()
 
         # Calculate ratio of those that left vs stayed
-        country_ratios = []
-
         # TODO: Use something other than iterrows for efficiency
+        all_row_ratios = []
         for _, row in df_combined.iterrows():
             ratio_left = row['Left']/row['All']
             ratio_stayed = row['Stayed']/row['All']
-            country_ratios.append([100, ratio_stayed, ratio_left, row['All']])
+            all_row_ratios.append([ratio_stayed.round(2), ratio_left.round(2)])
 
-        ratios_dataframe = pd.DataFrame(country_ratios)
-        print (f"Ratios: {ratios_dataframe}")
+        ratios_dataframe = pd.DataFrame(all_row_ratios)
+        print(f"Ratios: {ratios_dataframe}\n")
 
+        # Remove all data from bar chart
+        df_combined = df_combined.drop(columns="All")
+
+        # Output the results as a bar chart
         df_combined.sort_index(inplace=True)
-        ax = df_combined.plot(kind='bar')
+        ax = df_combined.plot(kind='bar', color=['#00C43C', '#E95238'])
 
         ax.set_title(title)
         ax.set_ylabel("Num. Customers")
-        # Output the result
-        print (df_combined)
+        # print the result
+        print(df_combined)
 
         plt.tight_layout()
         plt.savefig("Figures/"+save_name)
@@ -247,16 +130,16 @@ class DataAnalysis():
         # of columns we are interested in by number of columns
         # and then round up
         num_rows = math.ceil(len(cols_of_interest) / num_cols)
-        
-        _, axes = plt.subplots(num_rows, num_cols, sharex=True, 
-                               figsize=(7,10))
-        
+
+        _, axes = plt.subplots(num_rows, num_cols, sharex=True,
+                               figsize=(7, 10))
+
         row, col = 0, 0
         for column_name in cols_of_interest:
-            
-            sns.boxplot(ax=axes[row,col], x='Exited', 
-                        y=column_name, data=df)
-            
+
+            sns.boxplot(ax=axes[row, col], x='Exited', y=column_name, data=df,
+                        palette="Greens", hue='Exited', legend=False)
+
             axes[row, col].set_title(f"{column_name} vs Exited")
 
             # Move to next column, if last column then
@@ -265,48 +148,7 @@ class DataAnalysis():
             if col > num_cols-1:
                 col = 0
                 row += 1
-                        
+
         plt.tight_layout()
         plt.savefig("Figures/group_box_plot.png")
-        plt.show()   
-
-
-def main():
-
-    dataloader = DataLoader("customer_data.xlsx")
-    customer_data = dataloader.load_and_clean()
-
-    data_analysis = DataAnalysis()
-    
-    cois = ['Country', 'Gender']
-    customer_data = dataloader.apply_label_encoding(customer_data, cois)
-    
-
-    #numerical_cols = ['CreditScore' , 'Age', 'Tenure', 'Balance (EUR)', 'NumberOfProducts', #'HasCreditCard', 'IsActiveMember', 'EstimatedSalary', 'Exited']
-
-    #customer_cat = customer_data[['Surname', 'Country', 'Gender', 'CustomerFeedback']]
-    #customer_num = customer_data[numerical_cols]
-
-    #print (customer_num.describe())
-
-    #print (customer_cat.describe(exclude=['int64', 'float64']))
-    
-    # Get ratio of ground truth labels
-    #print (customer_data['Exited'].value_counts())
-
-    # Create a group box plot for numerical data
-    cols_of_interest = ['CreditScore' , 'Age', 'Tenure', 'Balance (EUR)', 'EstimatedSalary']
-    data_analysis.group_box_plot(customer_data, cols_of_interest, num_cols=2)
-
-    """
-    customer_data['EstimatedSalary'] = customer_data['EstimatedSalary'].round(decimals=-4)
-    title = "Retention Against Estimated Salary To Nearest Ten Thousand"
-    save_name = "estimated_salary.png"
-    data_analysis.compare_mode_against_existed(customer_data, "EstimatedSalary", title, save_name)
-    """
-
-    #data_analysis.compare_mean_against_existed(customer_data, 'Age')
-
-
-if __name__ == "__main__":
-    main()
+        plt.show()
