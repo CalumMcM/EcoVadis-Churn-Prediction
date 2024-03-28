@@ -5,6 +5,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+import ssl
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+nltk.download('vader_lexicon')
 
 class DataLoader():
     """
@@ -70,6 +81,53 @@ class DataLoader():
 
         return df
 
+    def apply_sentiment_analysis(self, df, col_name):
+        """
+        Applies sentiment analysis to the given column
+        
+        Inputs:
+            * df: (pd.DataFrame) The dataframe containing the
+                data
+            * col_name: (string) Column which sentiment
+                analysis will be applied to. 
+        
+        Returns:
+            * df: (pd.DataFrame) The same dataframe that was
+                passed into the model but the col_name column
+                has had sentiment analyses applied
+        """
+        # Create vader sentiment analyser
+        analyzer = SentimentIntensityAnalyzer()
+
+        # Extract column to apply sentiment analyses to
+        col_to_apply = df[col_name].to_numpy()
+
+        sentiments = np.zeros(len(col_to_apply))
+
+        # Appply sentiment analyses to each entry in the columns
+        for idx, text in enumerate(col_to_apply):
+            # Get the compound score and sort the combined
+            # probability into one of three columns:
+            # > 0.05 = Review is positive
+            # 0.05 < && < 0.05 = Review is neutral
+            # < 0.05 = Review is negative
+
+            compound_score = analyzer.polarity_scores(text[0])["compound"]
+
+            if compound_score > 0.05:
+                sentiments[idx] = 1
+            elif compound_score < -0.05:
+                sentiments[idx] = -1
+            else:
+                sentiments[idx] = 0
+
+        # Change to format of Pandas DataFrame
+        sentiments = np.transpose([sentiments])
+
+        df[col_name] = sentiments
+        
+        return df
+    
 
 class DataAnalysis():
     """

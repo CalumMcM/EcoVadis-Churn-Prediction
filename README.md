@@ -25,12 +25,12 @@ The following information was found from data analysis that was applied to the '
 
 ### Data Cleaning:
 
-    CustomerFeedback is the only column with NaN values (a totla of 6982). This 
+* CustomerFeedback is the only column with NaN values (a totla of 6982). This 
     missing data appears independent of whether or not the user has left the 
     system and so will be filled with empty speech marks to prevent NaN errors
     during model training. 
 
-    * There are no duplicated results in the customer feedback. 
+* There are no duplicated results in the customer feedback. 
 
 ### Noteable Insights:
 
@@ -105,15 +105,17 @@ Two models were trained on the data, a RandomForestClassifier and an XGBoost cla
 
 ### Pre-training:
 
-Before data was passed to the model to train, the following fields were removed: 'RowNumber', 'CustomerId', 'Surname', 'CustomerFeedback'. These fields were removed as they held either personal information such as 'Surname' or they were fields that would not help predictions.
+Before data was passed to the model to train, the following fields were removed: 'RowNumber', 'CustomerId', 'Surname', and 'CustomerFeedback'. These fields were removed as they held either personal information such as 'Surname' or they were fields that would not help predictions as they would be unique to each user or incomprehensible to the model.
 
 As well as removing these fields certain fields had label encoding applied to them. This was done to convert them from being of the String data type to an integer data type which the model will be able to better use as part of integer encoding. 
 
-The training data was split into the ratio of 70% train and 30% test. 
+Certain data fields such as 'Balance (EUR)' and 'EstimatedSalary' were momentarily rounded to the nearest thousand to see if binning the values into buckets would improve results, but it did not and so this pre-processing was removed. 
+
+The data was randomly split such that 70% made up the training data and 30% made up the test data. 
 
 ### Evaluation
 
-Confusion matrices were produced for the results in order to visualise displacement of predictions, while classification reports were also generated in order to understand the precision, recall and f1-score of the model. The following are the results:
+Confusion matrices were produced for the results in order to visualise displacement of predictions, while classification reports also generated in order to understand the precision, recall and f1-score of the model. The following are the results:
 
 Random Forest: 
 
@@ -165,3 +167,33 @@ XGBoost with SMOTE:
 
 
 It is evident that the addition of SMOTE has not increased the results signicantly and in fact has reduced performance of the model on nearly all metrics. This could be arrising from the fact that SMOTE is creating noise as part of its process in bulking the number of instances present in the smaller dataset. This noise could be leading to a decision boundary which is further from the real world equivalent and as a result the model struggles when only presented with real data. 
+
+#### Sentiment Analysis
+
+Valuable data is held as part of the CutomerFeedback field which if it could be converted into a form that the RandomForestClassifier or XGBoost model can understand could potentially improve model performance. The reasoning behind using sentiment analysis is that customers who leave happier feedback should in theory be more likely to stay at the company than those who do not. 
+
+This was achived by returning to the DataLoader class and adding an extra function which would apply sentiment analysis to a given column. VADER (Valence Aware Dictionary and sEntiment Reasoner) was chosen as the analysis tool to determine the sentiment of customer feedback reviews. No pre-processing is applied to the customer feedback before it is passed into VADER as it does not require standard NLP pre-processing techniques such as tokenization or stemming. This lightweight solution is what has made it ideal for this use case. As the inclusion of SMOTE only decreased the performance of the orignal model it was not used in combination with the sentiment analysis. 
+
+With sentiment analysis being applied to the CustomerFeedback column the results are now:
+
+Random Forest + Sentiment Analysis:
+
+              precision    recall  f1-score   support
+
+           0       0.87      0.96      0.92      2379
+           1       0.77      0.46      0.57       621
+
+    accuracy                           0.86      3000
+    macro avg      0.82      0.71      0.74      3000
+    weighted avg   0.85      0.86      0.84      3000
+
+XGBoost + Sentiment Analysis
+
+              precision    recall  f1-score   support
+
+           0       0.88      0.95      0.91      2379
+           1       0.72      0.52      0.60       621
+
+    accuracy                           0.86      3000
+    macro avg      0.80      0.73      0.76      3000
+    weighted avg   0.85      0.86      0.85      3000

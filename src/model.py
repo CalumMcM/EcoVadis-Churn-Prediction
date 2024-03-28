@@ -97,7 +97,7 @@ class MachineLearningModel():
         plt.xlabel('Predicted label')
         plt.ylabel('True label')
         plt.title(f'Confusion Matrix for {self.model_type}')
-        plt.savefig(f'./Figures/conf_matrix_SMOTE_{self.model_type}')
+        plt.savefig(f'./Figures/conf_matrix_SENTIMENT_{self.model_type}')
         plt.show()
 
 def main():
@@ -110,12 +110,14 @@ def main():
     cols_to_encode = ['Country', 'Gender']
     encoded_data = dataloader.apply_label_encoding(customer_data, cols_to_encode)
 
+    sentiment_data = dataloader.apply_sentiment_analysis(encoded_data, ['CustomerFeedback'])
+
     # Remove columns that cannot be easily converted
     # to a type the model can extract
     # meaningful information from
-    drop_cols = ['RowNumber', 'CustomerId', 'Surname', 'CustomerFeedback']
-    reduced_data = encoded_data.drop(columns=drop_cols)
-
+    drop_cols = ['RowNumber', 'CustomerId', 'Surname']
+    reduced_data = sentiment_data.drop(columns=drop_cols)
+    
     # Seperated labels from input data
     x = reduced_data.drop(columns=['Exited'])
     y = reduced_data['Exited']
@@ -125,20 +127,19 @@ def main():
                 train_test_split(x, y, test_size=0.3, random_state=42)
     
     # Apply SMOTE 
-    #oversample = SMOTE(k_neighbors=5)
-    #x_smote, y_smote = oversample.fit_resample(x_train, y_train)
-    #x_train, y_train = x_smote, y_smote
-    #print (y_train.value_counts())
-    
+    # oversample = SMOTE(k_neighbors=5)
+    # x_smote, y_smote = oversample.fit_resample(x_train, y_train)
+    # x_train, y_train = x_smote, y_smote
+    # print (y_train.value_counts())
+
     machine_learning_model = MachineLearningModel(x_train, x_test, y_train,
                                                   y_test, "XGB")
-    
+
     y_preds = machine_learning_model.fit_and_predict()
 
     machine_learning_model.conf_matrix(y_preds)
 
     print(classification_report(y_test, y_preds))
-
 
 if __name__ == "__main__":
 
