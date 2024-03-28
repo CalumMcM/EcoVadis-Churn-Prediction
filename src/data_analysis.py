@@ -15,12 +15,12 @@ class DataAnalysis():
     This class allows a user to create graphical evaluations of input data. 
 
     Methods:
-        * compare_mean_against_existed
+        * compare_mean_against_exited
         * compare_ratio_of_exited
         * group_box_plot
     """
 
-    def compare_mean_against_existed(self, cust_data, col):
+    def compare_mean_against_exited(self, cust_data, col):
         """
         Takes a column name in the database and takes the mean of the value for
         both those that exited and those that remained. This allows for

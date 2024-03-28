@@ -58,7 +58,7 @@ while those with a lower balance are more likely to stay.
     Command: 
             
             customer_data['EstimatedSalary'] = customer_data['EstimatedSalary'].round(decimals=-4)
-            data_analysis.compare_mode_against_existed(customer_data, "EstimatedSalary")
+            data_analysis.compare_ratio_of_exited(customer_data, "EstimatedSalary")
 
 
 * It is expected that the longer the customer is with the service the more
@@ -70,7 +70,7 @@ while those with a lower balance are more likely to stay.
     
     Command: 
         
-        data_analysis.compare_mode_against_existed(customer_data, "Tenure")
+        data_analysis.compare_ratio_of_exited(customer_data, "Tenure")
 
 * Customers are more likely to leave the server once their balance becomes >0. This is 
         likely due to the fact that those without money in the account or "ghost" users who
@@ -81,7 +81,7 @@ while those with a lower balance are more likely to stay.
     Command:
             
             customer_data['Balance (EUR)'].values[customer_data['Balance (EUR)'].values > 0] = 1
-            data_analysis.compare_mode_against_existed(customer_data, "Balance (EUR)", title, save_name)
+            data_analysis.compare_ratio_of_exited(customer_data, "Balance (EUR)", title, save_name)
 
 * It is interesting that regardless of how active a user is with a balance of 0, they are just as
         likely to stay as they are to leave. 
@@ -91,9 +91,9 @@ while those with a lower balance are more likely to stay.
     Command:
     
             customer_data['Balance (EUR)'].values[customer_data['Balance (EUR)'].values > 0] = 1
-            data_analysis.compare_mode_against_existed(customer_data, "IsActiveMember", title, save_name)
+            data_analysis.compare_ratio_of_exited(customer_data, "IsActiveMember", title, save_name)
 
-        (in compare_mode_against_existed)
+        (in compare_ratio_of_exited)
 
             customer_stayed = cust_data[(cust_data['Balance (EUR)'] == 0) & (cust_data['Exited']==0)]
             customer_exited = cust_data[(cust_data['Balance (EUR)'] == 0) & (cust_data['Exited']==1)]

@@ -7,9 +7,8 @@ from model import MachineLearningModel
 
 def perform_data_analysis():
     """
-    This function loads in the churn customer 
-    data and creates a DataAnalysis object
-    for gaining insights to the data. 
+    This function loads in the churn customer data and creates a DataAnalysis
+    object for gaining insights to the data. 
     """
     dataloader = DataLoader("customer_data.xlsx")
     customer_data = dataloader.load_and_clean()
@@ -27,12 +26,12 @@ def perform_data_analysis():
 
     customer_num = customer_data[numerical_cols]
 
-    # # Output descriptions for both the numerical and categorical data
+    # Output descriptions for both the numerical and categorical data
     print(f"Numerical Customer Data Description: {customer_num.describe()}\n")
     print(f"Categorical Customer Data Description: \
           {customer_cat.describe(exclude=['int64', 'float64'])}\n")
 
-    # # Get ratio of ground truth labels
+    # Get ratio of ground truth labels
     print(f"Ratio of exited vs stayed in data: \
           {customer_data['Exited'].value_counts()}\n")
 
@@ -51,16 +50,15 @@ def perform_data_analysis():
     data_analysis.compare_ratio_of_exited(customer_data, "EstimatedSalary",
                                                title, save_name)
 
-    # Output the mean age for those that have left the company and those haven't
-    data_analysis.compare_mean_against_existed(customer_data, 'Age')
+    # Output mean age for those that have and have not left the company
+    data_analysis.compare_mean_against_exited(customer_data, 'Age')
 
 
 def perform_model_training():
     """
-    This function loads in the churn customer
-    data and creates a MachineLearningModel
-    object in order to train a classifier on 
-    the data and evaluate its results. 
+    This function loads in the churn customer data and creates a
+    MachineLearningModel object in order to train a classifier on the data and
+    evaluate its results. 
     """
     # Load and clean the data
     dataloader = DataLoader("customer_data.xlsx")
@@ -74,9 +72,8 @@ def perform_model_training():
     sentiment_data = dataloader.apply_sentiment_analysis(encoded_data,
                                                          ['CustomerFeedback'])
 
-    # Remove columns that cannot be easily converted
-    # to a type the model can extract
-    # meaningful information from
+    # Remove columns that cannot be easily converted to a type the model can
+    # extract meaningful information from
     drop_cols = ['RowNumber', 'CustomerId', 'Surname']
     reduced_data = sentiment_data.drop(columns=drop_cols)
 
@@ -104,6 +101,6 @@ def perform_model_training():
 
 if __name__ == "__main__":
 
-    #perform_data_analysis()
+    perform_data_analysis()
 
-    perform_model_training()
+    #perform_model_training()
