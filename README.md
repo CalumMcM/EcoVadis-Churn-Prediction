@@ -211,8 +211,17 @@ XGBoost + Sentiment Analysis
               precision    recall  f1-score   support
 
            0       0.88      0.95      0.91      2379
-           1       0.72      0.52      0.60       621
+           1       0.74      0.52      0.61       621
 
     accuracy                           0.86      3000
-    macro avg      0.80      0.73      0.76      3000
+    macro avg      0.81      0.74      0.76      3000
     weighted avg   0.85      0.86      0.85      3000
+
+
+As can be seen from the above tables, the inclusion of sentiment analysis has
+had a minor decrease on the macro f1-score for both models, reducing it by 1% on
+both accounts. This implies that the customer feedback is not a strong indicator
+on whether or not a customer is likely to leave. However, a very basic sentiment
+analysis model was applied to the data and so it is possible that with a better
+sentiment analysis model, which has been fine-tuned on data unique to this use
+case, that it is possible to improve model performance with sentiment analysis. 

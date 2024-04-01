@@ -34,7 +34,7 @@ class MachineLearningModel():
     """
 
     def __init__(self, x_train: pd.DataFrame, x_test: pd.DataFrame,
-                 y_train: pd.DataFrame, y_test: pd.DataFrame, 
+                 y_train: pd.DataFrame, y_test: pd.DataFrame,
                  model_type: str) -> None:
         """
         Init function for the class
@@ -48,7 +48,7 @@ class MachineLearningModel():
                 labels for the model
             * y_test: (pd.DataFrame) Input test labels
                 for the model
-            *model_type: (string) Allows for different
+            * model_type: (string) Allows for different
                 model types to be evaluated. Allowed
                 options are:
                     - "RF" for RandomForestClassifier
@@ -71,8 +71,8 @@ class MachineLearningModel():
 
     def fit_and_predict(self) -> list[int]:
         """
-        Trains the chosen model type on the training data
-        and returns predictions for the test set. 
+        Trains the chosen model type on the training data and returns
+        predictions for the test set. 
 
         Returns:
             * y_pred: (array(int))
@@ -81,8 +81,8 @@ class MachineLearningModel():
 
         y_pred = self.model.predict(self.x_test)
 
-        # If XGB classifier is used then convert
-        # predictions around 0.5 decision boundary
+        # If XGB classifier is used then convert predictions around 0.5 decision
+        # boundary
         if self.model_type == "XGB":
             y_pred[y_pred > 0.5] = 1
             y_pred[y_pred <= 0.5] = 0
@@ -91,14 +91,13 @@ class MachineLearningModel():
 
     def evaluate(self, y_preds: list[int], y_test: list[int]):
         """
-        Plots of a confusion matrix with a given 
-        set of predictions and outputs the 
-        classifcation report to the terminal.
+        Plots of a confusion matrix with a given set of predictions and outputs
+        the classification report to the terminal.
 
         Inputs:
             * y_preds: (array(int)) Predictions
-                by the model of whether or not
-                a user has stayed (0) or exited (1)
+                by the model of whether or not a user has stayed (0) or exited
+                (1)
             * y_test: (array(int)) Ground truth
                 labels for each of the predictions
         """

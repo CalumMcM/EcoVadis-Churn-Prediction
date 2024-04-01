@@ -6,7 +6,6 @@ import math
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import seaborn as sns
 
 
@@ -56,8 +55,8 @@ class DataAnalysis():
         return all_mean, stayed_mean, left_mean
 
     def compare_splits_against_col(self, splits: dict[str: pd.DataFrame],
-                                    col: str, title: str, save_name: str) \
-                                        -> pd.DataFrame:
+                                   col: str, title: str, save_name: str) \
+            -> pd.DataFrame:
         """ 
         Given two splits of a dataset, computes the ratio of those two splits 
         against a given column that they both share.  
@@ -70,7 +69,7 @@ class DataAnalysis():
             * save_name: (string) Name of figure to save
 
         Returns:
-            * df_combined: (pd.DataFrame) The number of occurances for each of
+            * df_combined: (pd.DataFrame) The number of occurrences for each of
               the three categories of interest. 
         """
         # Extract the names and splits from the given dictionary
@@ -78,7 +77,7 @@ class DataAnalysis():
         split1 = splits[split_names[0]]
         split2 = splits[split_names[1]]
 
-        # Calculate the number of occurances for those that left, those that
+        # Calculate the number of occurrences for those that left, those that
         # stayed and both
         df_combined = pd.DataFrame()
         df_combined[split_names[0]] = split1[col].value_counts()
@@ -94,7 +93,7 @@ class DataAnalysis():
             all_row_ratios.append([ratio1.round(2), ratio2.round(2)])
 
         ratios_dataframe = pd.DataFrame(all_row_ratios)
-        print(f"Ratios: {ratios_dataframe}\n")
+        print(f"Ratios: \n{ratios_dataframe}\n")
 
         # Remove all data from bar chart
         df_combined = df_combined.drop(columns="All")
@@ -109,7 +108,8 @@ class DataAnalysis():
         print(df_combined)
 
         plt.tight_layout()
-        plt.savefig("Figures/"+save_name)
+        # Commenting out savefig for Docker Container
+        # plt.savefig("Figures/"+save_name)
         plt.show()
 
         return df_combined
@@ -155,5 +155,5 @@ class DataAnalysis():
                 row += 1
 
         plt.tight_layout()
-        plt.savefig("Figures/group_box_plot.png")
+        # plt.savefig("Figures/group_box_plot.png")
         plt.show()

@@ -1,3 +1,8 @@
+"""
+This module contains the DataLoader class which allows a user to load in and
+clean an excel spreadsheet of data as well as apply sentiment analysis to
+certain classes. 
+"""
 import ssl
 
 import nltk
@@ -50,7 +55,7 @@ class DataLoader():
 
         return clean_dataframe
 
-    def apply_label_encoding(self, df: pd.DataFrame, 
+    def apply_label_encoding(self, df: pd.DataFrame,
                              cols_to_apply: list[str]) -> pd.DataFrame:
         """
         Takes a dataframe and a list of column headers that should be encoded
@@ -98,7 +103,7 @@ class DataLoader():
             * df: (pd.DataFrame) The same dataframe that was passed into the
               model but the col_name column has had sentiment analysis applied.
         """
-        # Downlaod the Vader Lexicon
+        # Download the Vader Lexicon
         try:
             _create_unverified_https_context = ssl._create_unverified_context
         except AttributeError:
@@ -116,7 +121,7 @@ class DataLoader():
 
         sentiments = np.zeros(len(col_to_apply))
 
-        # Appply sentiment analysis to each entry in the columns
+        # Apply sentiment analysis to each entry in the columns
         for idx, text in enumerate(col_to_apply):
             # Get the compound score and sort the combined
             # probability into one of three columns

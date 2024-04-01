@@ -1,3 +1,7 @@
+"""
+Main file for running data analysis on the churn data as well as training and
+evaluating a model on the churn data. 
+"""
 from sklearn.model_selection import train_test_split
 
 from data_analysis import DataAnalysis
@@ -35,7 +39,7 @@ def perform_data_analysis():
 
     # Get ratio of ground truth labels
     print(f"Ratio of exited vs stayed in data: \
-          {customer_data['Exited'].value_counts()}\n")
+          \n{customer_data['Exited'].value_counts()}\n")
 
     # Create a group box plot for numerical data, showing the mean and data
     # distribution
@@ -125,7 +129,7 @@ def perform_model_training():
     drop_cols = ['RowNumber', 'CustomerId', 'Surname']
     reduced_data = sentiment_data.drop(columns=drop_cols)
 
-    # Seperated labels from input data
+    # Separated labels from input data
     x = reduced_data.drop(columns=['Exited'])
     y = reduced_data['Exited']
 
@@ -138,12 +142,13 @@ def perform_model_training():
     # x_smote, y_smote = oversample.fit_resample(x_train, y_train)
     # x_train, y_train = x_smote, y_smote
     # print (y_train.value_counts())
-
+    model_type = "XGB"
     machine_learning_model = MachineLearningModel(x_train, x_test, y_train,
-                                                  y_test, "XGB")
+                                                  y_test, model_type)
 
     y_preds = machine_learning_model.fit_and_predict()
 
+    print(f"Performance of {model_type} classifier model: ")
     machine_learning_model.evaluate(y_preds, y_test)
 
 
@@ -151,4 +156,4 @@ if __name__ == "__main__":
 
     perform_data_analysis()
 
-    # perform_model_training()
+    perform_model_training()
