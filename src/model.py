@@ -3,6 +3,7 @@ This module contains the MachineLearningModel class that allows a user to make
 predictions with a desired classification model and evaluate the results. 
 """
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 import seaborn as sns
 import xgboost as xgb
@@ -32,8 +33,9 @@ class MachineLearningModel():
         * evaluate
     """
 
-    def __init__(self, x_train, x_test,
-                 y_train, y_test, model_type) -> None:
+    def __init__(self, x_train: pd.DataFrame, x_test: pd.DataFrame,
+                 y_train: pd.DataFrame, y_test: pd.DataFrame, 
+                 model_type: str) -> None:
         """
         Init function for the class
 
@@ -67,7 +69,7 @@ class MachineLearningModel():
             print("No model chosen! The selected model \
                     must be either RF or XGB.")
 
-    def fit_and_predict(self):
+    def fit_and_predict(self) -> list[int]:
         """
         Trains the chosen model type on the training data
         and returns predictions for the test set. 
@@ -87,7 +89,7 @@ class MachineLearningModel():
 
         return y_pred
 
-    def evaluate(self, y_preds, y_test):
+    def evaluate(self, y_preds: list[int], y_test: list[int]):
         """
         Plots of a confusion matrix with a given 
         set of predictions and outputs the 

@@ -13,9 +13,17 @@ class DataLoader():
     clean the data ensuring that there are no NaN values present. The DataLoader
     can also be used to apply label encoding or sentiment analysis to certain
     fields.
+
+    Attributes:
+        * self.dataset_dir: (string)
+
+    Methods:
+        * load_and_clean
+        * apply_label_encoding
+        * apply_sentiment_analysis
     """
 
-    def __init__(self, dataset_dir) -> None:
+    def __init__(self, dataset_dir: str) -> None:
         """
         Init function for the DataLoader class 
 
@@ -42,7 +50,8 @@ class DataLoader():
 
         return clean_dataframe
 
-    def apply_label_encoding(self, df, cols_to_apply) -> pd.DataFrame:
+    def apply_label_encoding(self, df: pd.DataFrame, 
+                             cols_to_apply: list[str]) -> pd.DataFrame:
         """
         Takes a dataframe and a list of column headers that should be encoded
         from their string values to integers, e.g., ["France", "Germany"]
@@ -50,7 +59,7 @@ class DataLoader():
 
         Inputs:
             * df: (pd.DataFrame) The dataframe containing the data
-            * cols_to_apply: (array(string)) The columns to apply label encoding
+            * cols_to_apply: (list(string)) The columns to apply label encoding
               to
 
         Returns:
@@ -71,7 +80,8 @@ class DataLoader():
 
         return df
 
-    def apply_sentiment_analysis(self, df, col_name):
+    def apply_sentiment_analysis(self, df: pd.DataFrame,
+                                 col_name: str) -> tuple[pd.DataFrame, str]:
         """
         Applies a VADER sentiment analyser to the given column. The compound
         score reported by VADER is interpreted as:

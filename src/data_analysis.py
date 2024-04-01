@@ -20,14 +20,15 @@ class DataAnalysis():
         * group_box_plot
     """
 
-    def compare_mean_against_exited(self, cust_data, col):
+    def compare_mean_against_exited(self, cust_data: pd.DataFrame,
+                                    col: str) -> tuple[float, float, float]:
         """
         Takes a column name in the database and takes the mean of the value for
         both those that exited and those that remained. This allows for
         individual comparison of those that left and stayed for indivdual
         categories.
 
-        TODO: Check column is float/int/double (not String) Inputs:     
+        Inputs:     
             * cust_data: (pd.DataFrame) Dataframe that will be 
                 analysed 
             * col: (string) Column that will be analysed
@@ -54,13 +55,16 @@ class DataAnalysis():
 
         return all_mean, stayed_mean, left_mean
 
-    def compare_ratio_of_exited(self, cust_data, col, title, save_name):
-        """
-        Takes a column name in the database and counts the number of occurances
-        and ratios for the three categories of: 'All', 'Stayed', and 'Exited'. 
+    def compare_splits_against_col(self, splits: dict[str: pd.DataFrame],
+                                    col: str, title: str, save_name: str) \
+                                        -> pd.DataFrame:
+        """ 
+        Given two splits of a dataset, computes the ratio of those two splits 
+        against a given column that they both share.  
 
         Inputs:     
-            * cust_data: (pd.DataFrame) Dataframe that will be analysed
+            * splits: (dict) Dictionary containing two splits of a dataset in
+              the format of {'split_name' : pd.DataFrame}
             * col: (string) Column that will be analysed
             * title: (string) Title of the figure
             * save_name: (string) Name of figure to save
@@ -69,25 +73,25 @@ class DataAnalysis():
             * df_combined: (pd.DataFrame) The number of occurances for each of
               the three categories of interest. 
         """
-        # Get the data for both those who left and those
-        # who stayed
-        customer_stayed = cust_data.loc[cust_data['Exited'] == 0]
-        customer_exited = cust_data.loc[cust_data['Exited'] == 1]
+        # Extract the names and splits from the given dictionary
+        split_names = list(splits.keys())
+        split1 = splits[split_names[0]]
+        split2 = splits[split_names[1]]
 
-        # Calculate the number of occurances for three categories
+        # Calculate the number of occurances for those that left, those that
+        # stayed and both
         df_combined = pd.DataFrame()
-
-        df_combined['All'] = cust_data[col].value_counts()
-        df_combined['Stayed'] =  customer_stayed[col].value_counts()
-        df_combined['Left'] = customer_exited[col].value_counts()
+        df_combined[split_names[0]] = split1[col].value_counts()
+        df_combined[split_names[1]] = split2[col].value_counts()
+        df_combined['All'] = split1[col].value_counts() + \
+            split2[col].value_counts()
 
         # Calculate ratio of those that left vs stayed
-        # TODO: Use something other than iterrows for efficiency
         all_row_ratios = []
         for _, row in df_combined.iterrows():
-            ratio_left = row['Left']/row['All']
-            ratio_stayed = row['Stayed']/row['All']
-            all_row_ratios.append([ratio_stayed.round(2), ratio_left.round(2)])
+            ratio1 = row[split_names[0]]/row['All']
+            ratio2 = row[split_names[1]]/row['All']
+            all_row_ratios.append([ratio1.round(2), ratio2.round(2)])
 
         ratios_dataframe = pd.DataFrame(all_row_ratios)
         print(f"Ratios: {ratios_dataframe}\n")
@@ -110,7 +114,8 @@ class DataAnalysis():
 
         return df_combined
 
-    def group_box_plot(self, df, cols_of_interest, num_cols):
+    def group_box_plot(self, df: pd.DataFrame, cols_of_interest: list[str],
+                       num_cols: int):
         """
         Takes a list of column names of interest and a dataframe
         that they are within. A group of boxplots are then made

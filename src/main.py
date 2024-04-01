@@ -10,6 +10,7 @@ def perform_data_analysis():
     This function loads in the churn customer data and creates a DataAnalysis
     object for gaining insights to the data. 
     """
+    # Load and clean the data
     dataloader = DataLoader("customer_data.xlsx")
     customer_data = dataloader.load_and_clean()
 
@@ -27,9 +28,10 @@ def perform_data_analysis():
     customer_num = customer_data[numerical_cols]
 
     # Output descriptions for both the numerical and categorical data
-    print(f"Numerical Customer Data Description: {customer_num.describe()}\n")
+    print(f"Numerical Customer Data Description: \
+                    \n{customer_num.describe()}\n")
     print(f"Categorical Customer Data Description: \
-          {customer_cat.describe(exclude=['int64', 'float64'])}\n")
+                    \n{customer_cat.describe(exclude=['int64', 'float64'])}\n")
 
     # Get ratio of ground truth labels
     print(f"Ratio of exited vs stayed in data: \
@@ -42,13 +44,59 @@ def perform_data_analysis():
 
     data_analysis.group_box_plot(customer_data, cols_of_interest, num_cols=2)
 
-    # Plot the distribution of estimated salaries for those that left vs stayed
+    # The following plots compare the customers who exited vs those that stayed
+    # against a chosen column
+
+    # Plot ratio of exited customers based on estimated salaries (rounded to
+    # nearest 10,000)
     customer_data['EstimatedSalary'] = customer_data['EstimatedSalary']. \
         round(decimals=-4)
+    customer_stayed_split = customer_data.loc[customer_data['Exited'] == 0]
+    customer_exited_split = customer_data.loc[customer_data['Exited'] == 1]
+    splits = {
+        'Stayed': customer_stayed_split,
+        'Exited': customer_exited_split
+    }
     title = "Retention Against Estimated Salary To Nearest Ten Thousand"
     save_name = "estimated_salary.png"
-    data_analysis.compare_ratio_of_exited(customer_data, "EstimatedSalary",
-                                               title, save_name)
+    data_analysis.compare_splits_against_col(splits, "EstimatedSalary", title,
+                                             save_name)
+
+    # Plot the ratio of exited customers based on year of service
+    title = "Retention of Customers Based on Time With Service"
+    save_name = "tenure.png"
+    data_analysis.compare_splits_against_col(
+        splits, "Tenure", title, save_name)
+
+    # Plot the ratio of exited customers based on whether their balance is >0 or
+    # not. The balance of all customers with a balance >0 is set to 1
+    customer_data['Balance (EUR)'].values[customer_data['Balance (EUR)'].values
+                                          > 0] = 1
+    customer_stayed_split = customer_data.loc[customer_data['Exited'] == 0]
+    customer_exited_split = customer_data.loc[customer_data['Exited'] == 1]
+    splits = {
+        'Stayed': customer_stayed_split,
+        'Exited': customer_exited_split
+    }
+    title = "Retention of Customers With a Balance of 0 or >0"
+    save_name = "binary_balance.png"
+    data_analysis.compare_splits_against_col(splits, "Balance (EUR)", title,
+                                             save_name)
+
+    # Plot the ratio of exited customers with a balance of 0 based on whether
+    # they are active or not
+    customer_stayed_split = customer_data[(customer_data['Balance (EUR)'] == 0)
+                                          & (customer_data['Exited'] == 0)]
+    customer_exited_split = customer_data[(customer_data['Balance (EUR)'] == 0)
+                                          & (customer_data['Exited'] == 1)]
+    splits = {
+        'Stayed': customer_stayed_split,
+        'Exited': customer_exited_split
+    }
+    title = "Retention of Active Customers With a Balance of 0"
+    save_name = "zero_balance_active.png"
+    data_analysis.compare_splits_against_col(splits, "IsActiveMember", title,
+                                             save_name)
 
     # Output mean age for those that have and have not left the company
     data_analysis.compare_mean_against_exited(customer_data, 'Age')
@@ -103,4 +151,4 @@ if __name__ == "__main__":
 
     perform_data_analysis()
 
-    #perform_model_training()
+    # perform_model_training()
